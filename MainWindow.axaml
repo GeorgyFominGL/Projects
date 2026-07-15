@@ -1,0 +1,58 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:GL3"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="GL3.MainWindow"
+        Title="GL3">
+    <Window.Styles>
+        <Style Selector="Menu">
+            <Setter Property="Background" Value="{x:Static local:BaseScene.DefBrush}" />
+        </Style>
+        <Style Selector="StackPanel">
+            <Setter Property="Background" Value="{x:Static local:BaseScene.DefBrush}" />
+        </Style>
+        <Style Selector="Border">
+            <Setter Property="Background" Value="{x:Static local:BaseScene.DefBrush}" />
+        </Style>
+    </Window.Styles>
+    <!-- Главная сетка: делит окно на Меню, Контент и Статус-бар -->
+    <Grid RowDefinitions="Auto, *, Auto">
+
+        <!-- 1. Верхнее Меню (Студенты могут добавлять пункты сюда) -->
+        <Menu Grid.Row="0" Name="Menu" Background="#000051" Foreground="Yellow">
+            <MenuItem Header="Basics" Name="scenesMenu" Foreground="Yellow">
+                <!-- Пример ручного добавления, как привыкли студенты -->
+                <MenuItem Header="Simple Triangle" Background="#000051" Foreground="Yellow" Click="OnMenuItemClick"/>
+                <MenuItem Header="Clear Coloring" Background="#000051" Foreground="Yellow" Click="OnMenuItemClick"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- 2. Центральная рабочая область -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto, *, Auto">
+
+            <!-- Левая панель инструментов -->
+            <StackPanel Grid.Column="0" Name="leftPanel" Background="#111144" Width="24" Spacing="5" Margin="5">
+            </StackPanel>
+
+            <!-- Центральная OpenGL панель: автоматически вписывается как КВАДРАТ строго по центру -->
+            <Grid Grid.Column="1" Background="Black" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Viewbox Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- Задаем базовый логический размер квадрата (например, 800x800).
+                    Viewbox сам будет пропорционально сжимать и растягивать его, сохраняя форму 1:1 -->
+                    <local:TKControl Name="openGlCanvas" Width="800" Height="800" Margin="5"/>
+                </Viewbox>
+            </Grid>
+
+            <!-- Правая панель инструментов -->
+            <StackPanel Grid.Column="2" Name="rightPanel" Background="#111144" Width="24" Spacing="5" Margin="5"/>
+        </Grid>
+
+        <!-- 3. Нижний Статус-бар (Замена statusStrip1) -->
+        <Border x:Name="statusBorder" Grid.Row="2" Background="#000022" Height="30" BorderBrush="Gray" BorderThickness="0,1,0,0">
+            <TextBlock Name="statusLabel" Foreground="White" VerticalAlignment="Center" Margin="10,0" Text="Base Scene"/>
+        </Border>
+
+    </Grid>
+</Window>
