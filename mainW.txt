@@ -1,0 +1,88 @@
+using Avalonia;
+using Avalonia.Controls;
+using System;
+
+namespace GL3
+{
+    public partial class MainWindow : Window
+    {
+        public Size InitSize { get; private set; }
+        public Avalonia.Platform.Screen? InitScreen { get; private set; }
+        public MainWindow()
+        {
+            InitializeComponent();
+            SetupWindowGeometry();
+            // Загружаем начальную сцену по умолчанию при старте приложения
+            SwitchScene(new DefaultScene(), "OpenGL Application");
+            // Автоматически подписываем все пункты меню
+            SubscribeMenuItems();
+        }
+        private void SubscribeMenuItems()
+        {
+            // Находим вкладку "Basics" по имени
+            var basicsMenu = this.FindControl<MenuItem>("scenesMenu");
+
+            if (basicsMenu != null)
+            {
+                // Проходим по всем вложенным элементам вкладки
+                foreach (var item in basicsMenu.Items)
+                {
+                    if (item is MenuItem menuItem)
+                    {
+                        // Привязываем общий обработчик клика
+                        menuItem.Click += OnMenuItemClick;
+                    }
+                }
+            }
+        }
+        private void SetupWindowGeometry()
+        {
+            var currentScreen = Screens.ScreenFromWindow(this) ?? throw new InvalidOperationException("Primary display is missing");
+            double minPhysicalSide = Math.Min(currentScreen.Bounds.Width * 0.9, currentScreen.Bounds.Height * 0.9);
+            double logicalSide = minPhysicalSide / currentScreen.Scaling;
+            InitScreen = currentScreen;
+            this.Width = logicalSide;
+            this.Height = logicalSide;
+            InitSize = new Size(this.Width, this.Height);
+            this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        }
+        private void SwitchScene(BaseScene? newScene, string sceneName)
+        {
+            if (newScene == null) return;
+            // Обновляем заголовок окна
+            Title = sceneName;
+
+            // 1. Передаем контекст окна ДО генерации UI элементов
+            newScene.ParentWindow = this;
+            openGlCanvas.CurrentScene = newScene;
+
+            // 2. Очищаем боковые панели и загружаем кнопки сцены (включая Reset)
+            leftPanel.Children.Clear();
+            foreach (var control in newScene.GetLeftPanelControls())
+            {
+                leftPanel.Children.Add(control);
+            }
+            rightPanel.Children.Clear();
+            foreach (var control in newScene.GetRightPanelControls())
+            {
+                rightPanel.Children.Add(control);
+            }
+        }
+        private void OnMenuItemClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (sender is not MenuItem menuItem || menuItem.Header == null) return;
+            //if (sender is MenuItem menuItem && menuItem.Header != null)
+            {
+                string sceneName = menuItem.Header.ToString()!;
+                // Определяем имя класса, экземпляр которого должен быть создан
+                string className = "GL3." + sceneName.Replace(" ", string.Empty);
+                // Определяем тип класса, если класс с заданным именем существует
+                Type? classType = Type.GetType(className) ?? throw new NullReferenceException(className + " is missing");
+                // Создаем экземпляр класса сцены найденного типа
+                BaseScene? newScene = (BaseScene)(Activator.CreateInstance(classType) ?? throw new NullReferenceException());
+                // Переключаем сцену через универсальный метод
+                SwitchScene(newScene, sceneName);
+            }
+        }
+    }
+}
